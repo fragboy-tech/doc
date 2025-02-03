@@ -231,4 +231,35 @@ route.get("/director", async (req, res) => {
   });
 });
 
+route.get("/year", async (req, res) => {
+  let { year, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  year = parseInt(year);
+
+  if (!year) {
+    res.json({ success: false, message: "year required" });
+  }
+
+  const query = { year: { $eq: year } };
+
+
+  const movies = await movies_collection
+    .find(query)
+    .sort({year: 1})
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const movieS = await movies_collection.countDocuments(query);
+  
+
+  res.json({
+    success: true,
+    pagination: { total: movieS, page, limit },
+    data: { movies },
+  });
+});
+
 export { route };
