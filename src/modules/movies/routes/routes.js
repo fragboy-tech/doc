@@ -146,4 +146,33 @@ route.get("/rating", async (req, res) => {
     data: { movies },
   });
 });
+
+route.get("/votes", async (req, res) => {
+  let { minVotes, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  minVotes = parseInt(minVotes);
+
+  if (!minVotes) {
+    res.json({ success: false, message: "minVotes required" });
+  }
+
+  const query = { "imdb.votes": { $gt: minVotes } };
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const movieS = await movies_collection.countDocuments(query);
+
+  res.json({
+    success: true,
+    pagination: { total: movieS, page, limit },
+    data: { movies },
+  });
+});
+
 export { route };
