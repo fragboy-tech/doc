@@ -175,4 +175,32 @@ route.get("/votes", async (req, res) => {
   });
 });
 
+route.get("/runtime", async (req, res) => {
+  let { maxRuntime, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  maxRuntime = parseInt(maxRuntime);
+
+  if (!maxRuntime) {
+    res.json({ success: false, message: "maxRuntime required" });
+  }
+
+  const query = { runtime: { $lt: maxRuntime } };
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const movieS = await movies_collection.countDocuments(query);
+
+  res.json({
+    success: true,
+    pagination: { total: movieS, page, limit },
+    data: { movies },
+  });
+});
+
 export { route };
