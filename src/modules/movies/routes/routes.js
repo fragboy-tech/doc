@@ -379,4 +379,33 @@ route.get("/filter", async (req, res) => {
     data: { movies },
   });
 });
+
+route.get("/cast", async (req, res) => {
+  let { castMember, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  if (!castMember) {
+    res.json({ success: false, message: "castMember required" });
+  }
+
+  const query = { cast: { $in: [castMember] } }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+  
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
+
 export { route };
