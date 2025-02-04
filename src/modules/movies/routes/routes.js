@@ -428,4 +428,28 @@ route.get("/count", async (req, res) => {
   });
 });
 
+route.get("/no-votes", async (req, res) => {
+  let {  page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  const query = { "imdb.votes": { $eq: 0 } }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+  
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
+
 export { route };
