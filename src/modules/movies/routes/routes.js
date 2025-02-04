@@ -408,4 +408,24 @@ route.get("/cast", async (req, res) => {
   });
 });
 
+route.get("/count", async (req, res) => {
+  let { genre, limit = 10 } = req.query;
+
+  if (!genre) {
+    res.json({ success: false, message: "genre required" });
+  }
+  const query = {genres: {$eq: genre }}
+  const movies = await movies_collection
+    .find(query)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+  res.json({
+    success: true,
+    pagination: { total, limit },
+    data: { movies },
+  });
+});
+
 export { route };
