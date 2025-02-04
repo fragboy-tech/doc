@@ -549,5 +549,31 @@ route.get("/award-count", async (req, res) => {
   });
 });
 
+route.get("/country", async (req, res) => {
+  let { country, page = 1, limit = 10 } =req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  if(!country){
+    res.json({success: false , message: "country  required"})
+  };
+  const query = { countries: {$in: [country] }};
+
+  const movies = await movies_collection
+  .find(query)
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+
+})
 
 export { route };
