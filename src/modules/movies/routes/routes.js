@@ -281,6 +281,27 @@ route.get("/limit", async (req, res) => {
     pagination: { total, page, limit },
     data: { movies },
   });
-})
+});
+
+route.get("/paginate", async (req, res) => {
+  let {  page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  const movies = await movies_collection
+    .find({})
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments({}, {limit})
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
 
 export { route };
