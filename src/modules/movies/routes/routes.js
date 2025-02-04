@@ -574,6 +574,33 @@ route.get("/country", async (req, res) => {
     data: { movies },
   });
 
-})
+});
+
+route.get("/type", async (req, res) => {
+  let { type, page = 1, limit = 10 } =req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  if(!type){
+    res.json({success: false , message: "type  required"})
+  };
+  const query = { type: {$eq: type }};
+
+  const movies = await movies_collection
+  .find(query)
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+
+});
 
 export { route };
