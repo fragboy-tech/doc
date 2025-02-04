@@ -356,4 +356,27 @@ route.get("/language", async (req, res) => {
   });
 });
 
+route.get("/filter", async (req, res) => {
+  let { year = 1900, genre = "Action" , page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  year= parseInt(year);
+
+  const query = { $and: [{ genres: genre }, { year: { $gt: year  } }] }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query)
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
 export { route };
