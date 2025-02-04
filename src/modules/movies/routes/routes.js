@@ -452,4 +452,29 @@ route.get("/no-votes", async (req, res) => {
   });
 });
 
+route.get("/runtime-range", async (req, res) => {
+  let { minRuntime = 60, maxRuntime = 80 , page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  minRuntime = parseInt(minRuntime);
+  maxRuntime = parseInt(maxRuntime);
+
+  const query = { $and: [{ runtime: { $gt: minRuntime}}, { runtime: { $lt: maxRuntime  } }] }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query)
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
+
 export { route };
