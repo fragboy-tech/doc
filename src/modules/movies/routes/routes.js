@@ -1,7 +1,6 @@
 import express from "express";
 import { client } from "../../../mongo.js";
 
-
 const route = express.Router();
 
 const database = client.db("sample_mflix");
@@ -461,6 +460,29 @@ route.get("/runtime-range", async (req, res) => {
   maxRuntime = parseInt(maxRuntime);
 
   const query = { $and: [{ runtime: { $gt: minRuntime}}, { runtime: { $lt: maxRuntime  } }] }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query)
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
+
+route.get("/release-range", async (req, res) => {
+  let { startDate = "1900-06-20", endDate = "1920-03-12" , page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  
+  const query = { $and: [{ released: { $gt: new Date(startDate)}}, { released: { $lt: new Date(endDate)  } }] }
 
   const movies = await movies_collection
     .find(query)
