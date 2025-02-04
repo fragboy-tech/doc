@@ -499,4 +499,30 @@ route.get("/release-range", async (req, res) => {
   });
 });
 
+route.get("/imdb-range", async (req, res) => {
+  let { minRating = 6, maxRating = 8 , page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  minRating = parseInt(minRating);
+  maxRating = parseInt(maxRating);
+
+  const query = { $and: [{ "imdb.rating": { $gt: minRating}}, { "imdb.rating": { $lt: maxRating  } }] }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query)
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
+
+
 export { route };
