@@ -633,4 +633,32 @@ route.get("/and", async (req, res) => {
   });
 });
 
+route.get("/in", async (req, res) => {
+  let { rating, page = 1, limit = 10 } =req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  if(!rating){
+    res.json({success: false , message: "rating  required"})
+  };
+  
+  const query = { "imdb.rating": {$in: rating.map((rating) => Number(rating)) }};
+
+  const movies = await movies_collection
+  .find(query)
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+
+});
+
 export { route };
