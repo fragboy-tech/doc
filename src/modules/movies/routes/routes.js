@@ -328,4 +328,32 @@ route.get("/awards", async (req, res) => {
   });
 });
 
+route.get("/language", async (req, res) => {
+  let { language, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  if (!language) {
+    res.json({ success: false, message: "language required" });
+  }
+
+  const query = { languages: { $in: [language] } }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+  
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
+
 export { route };
