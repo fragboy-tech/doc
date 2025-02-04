@@ -524,5 +524,30 @@ route.get("/imdb-range", async (req, res) => {
   });
 });
 
+route.get("/award-count", async (req, res) => {
+  let { minWins = 10, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+  minWins = parseInt(minWins)
+
+  const query = { "awards.wins": { $gt:  minWins} }
+
+  const movies = await movies_collection
+    .find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .toArray();
+
+  const total = await movies_collection.countDocuments(query);
+  
+
+  res.json({
+    success: true,
+    pagination: { total, page, limit },
+    data: { movies },
+  });
+});
+
 
 export { route };
